@@ -384,6 +384,81 @@ int main() {
 
 ---
 
+## Session 6: Debugging C++ Memory Models
+### Introduction
+C++11 introduced a formal memory model. While `std::mutex` provides sequential consistency (the easiest to reason about), lock-free programming requires understanding atomic operations and memory ordering. Debugging memory ordering bugs is notoriously difficult because they manifest as intermittent data races or logical inconsistencies on specific CPU architectures (like ARM).
+
+### Important Points
+- **Sequential Consistency (`std::memory_order_seq_cst`):** The default. All threads see all operations in the exact same order.
+- **Acquire-Release Semantics:** Used to synchronize data between threads without a global order. An `acquire` operation ensures subsequent reads/writes aren't moved before it. A `release` operation ensures previous reads/writes aren't moved after it.
+- **Relaxed Ordering (`std::memory_order_relaxed`):** No synchronization or ordering guarantees, only atomicity for the variable itself.
+
+### 16. Code Example: Relaxed Ordering Data Race (Logical)
+Using relaxed ordering can lead to threads seeing values out of order if not synchronized properly.
+```cpp
+#include <atomic>
+#include <thread>
+#include <iostream>
+
+std::atomic<int> x(0);
+std::atomic<int> y(0);
+int r1 = 0, r2 = 0;
+
+void thread1() {
+    x.store(1, std::memory_order_relaxed);
+    r1 = y.load(std::memory_order_relaxed);
+}
+
+void thread2() {
+    y.store(1, std::memory_order_relaxed);
+    r2 = x.load(std::memory_order_relaxed);
+}
+
+int main() {
+    std::thread t1(thread1); std::thread t2(thread2);
+    t1.join(); t2.join();
+    // It is possible for both r1 == 0 AND r2 == 0 because 
+    // the CPU/Compiler is free to reorder the load before the store!
+    std::cout << "r1: " << r1 << ", r2: " << r2 << std::endl;
+}
+```
+
+### 17. Code Example: Safe Acquire-Release
+Correctly synchronizing a payload using acquire-release semantics.
+```cpp
+#include <atomic>
+#include <thread>
+#include <iostream>
+
+std::atomic<bool> ready(false);
+int payload = 0;
+
+void producer() {
+    payload = 42; // Normal memory write
+    // Release ensures 'payload=42' happens before 'ready=true' becomes visible
+    ready.store(true, std::memory_order_release); 
+}
+
+void consumer() {
+    // Acquire ensures we don't read 'payload' until 'ready' is truly true
+    while (!ready.load(std::memory_order_acquire)) {} 
+    std::cout << "Payload: " << payload << std::endl; // Safely prints 42
+}
+
+int main() {
+    std::thread t1(producer); std::thread t2(consumer);
+    t1.join(); t2.join();
+}
+```
+
+### External Links & Further Reading
+- [C++ Memory Model Documentation (cppreference)](https://en.cppreference.com/w/cpp/atomic/memory_order)
+- [GCC Wiki: Atomic Sync](https://gcc.gnu.org/wiki/Atomic/GCCMM/AtomicSync)
+- [Preshing on Programming (Excellent blog on lock-free concurrency)](https://preshing.com/)
+- [Valgrind DRD & Helgrind (Thread error detectors)](https://valgrind.org/docs/manual/drd-manual.html)
+
+---
+
 ## Hands-on Lab
 1. **Multithreaded Crash:** You are provided with a crashing multithreaded service (`lab1/crash_service.cpp`). Use GDB `thread apply all bt` to find the exact thread and line causing a segmentation fault.
 2. **Memory Leak Hunt:** Compile `lab1/leak_app.cpp` using `-fsanitize=address`. Run the application and capture the ASAN report. Identify the exact function leaking memory and fix the code.
