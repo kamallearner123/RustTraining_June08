@@ -164,3 +164,103 @@ A look into the immediate future with C++23 features like `std::expected` for er
 <details><summary>View Answer</summary>
 <b>Answer:</b> Deducing `this`
 </details>
+
+11. What problem does `std::shared_ptr` solve that `std::unique_ptr` cannot?
+<details><summary>View Answer</summary>
+<b>Answer:</b> Allowing multiple owners of the same dynamically allocated object using reference counting.
+</details>
+
+12. In C++20 Concepts, what keyword is used to define a new concept?
+<details><summary>View Answer</summary>
+<b>Answer:</b> `concept`
+</details>
+
+13. Which standard header must be included to use C++20 Ranges?
+<details><summary>View Answer</summary>
+<b>Answer:</b> `<ranges>`
+</details>
+
+14. How do C++20 Views differ from traditional containers?
+<details><summary>View Answer</summary>
+<b>Answer:</b> Views are non-owning and evaluated lazily, whereas containers own their data.
+</details>
+
+15. What is the return type of a function that uses `co_yield` or `co_await`?
+<details><summary>View Answer</summary>
+<b>Answer:</b> It must return a coroutine-compatible type, not a standard type like `int`.
+</details>
+
+16. What is a "Promise" in the context of C++20 Coroutines?
+<details><summary>View Answer</summary>
+<b>Answer:</b> The object that controls the coroutine's state and is used to return a value or exception.
+</details>
+
+17. Why is `std::format` preferred over `std::cout` (iostreams) for complex output?
+<details><summary>View Answer</summary>
+<b>Answer:</b> It is faster, type-safe, and allows for much clearer formatting strings (similar to Python's f-strings).
+</details>
+
+18. What C++23 feature allows you to elegantly handle both values and errors without exceptions?
+<details><summary>View Answer</summary>
+<b>Answer:</b> `std::expected`
+</details>
+
+19. In C++, what does the "Rule of Zero" state?
+<details><summary>View Answer</summary>
+<b>Answer:</b> A class should avoid defining any custom destructor, copy/move constructors, or assignment operators by relying on RAII members (like smart pointers).
+</details>
+
+20. What is a "Dangling Pointer"?
+<details><summary>View Answer</summary>
+<b>Answer:</b> A pointer that still points to a memory location after the object it pointed to has been deleted or deallocated.
+</details>
+
+21. Which function is used to create a `std::shared_ptr` efficiently in one allocation?
+<details><summary>View Answer</summary>
+<b>Answer:</b> `std::make_shared`
+</details>
+
+22. What happens to a `std::unique_ptr` when it is passed by value to a function?
+<details><summary>View Answer</summary>
+<b>Answer:</b> It causes a compile error, as `std::unique_ptr` cannot be copied; it must be moved.
+</details>
+
+23. What C++ feature eliminates the need to specify types explicitly when they can be inferred from the initializer?
+<details><summary>View Answer</summary>
+<b>Answer:</b> `auto`
+</details>
+
+24. How does `constexpr` differ from `const`?
+<details><summary>View Answer</summary>
+<b>Answer:</b> `constexpr` implies the value or function *can* be evaluated at compile-time, while `const` just means the value cannot be mutated after initialization.
+</details>
+
+25. What is the syntax for a lambda expression that captures all variables by reference?
+<details><summary>View Answer</summary>
+<b>Answer:</b> `[&]`
+</details>
+
+26. Which C++20 feature allows you to initialize variables inside a range-based for loop?
+<details><summary>View Answer</summary>
+<b>Answer:</b> init-statement in range-based for (e.g., `for (int x = 0; auto i : vec)`)
+</details>
+
+27. What is the primary advantage of the Curiously Recurring Template Pattern (CRTP)?
+<details><summary>View Answer</summary>
+<b>Answer:</b> Static polymorphism (polymorphism at compile-time without virtual function overhead).
+</details>
+
+28. Which C++23 feature aims to simplify CRTP?
+<details><summary>View Answer</summary>
+<b>Answer:</b> Deducing `this`
+</details>
+
+29. What is a `std::weak_ptr`?
+<details><summary>View Answer</summary>
+<b>Answer:</b> A smart pointer that observes a `std::shared_ptr` without increasing the reference count, preventing circular references.
+</details>
+
+30. In the context of `spdlog`, what does "asynchronous logging" mean?
+<details><summary>View Answer</summary>
+<b>Answer:</b> Log messages are pushed to a queue and written to disk by a background thread, preventing the main thread from blocking on I/O.
+</details>

@@ -139,3 +139,103 @@ We walk through a real-world scenario of migrating a legacy C++ network parsing 
 <details><summary>View Answer</summary>
 <b>Answer:</b> It contains the risk and provides a safe, idiomatic API to the rest of the Rust codebase, relying on the compiler for callers.
 </details>
+
+11. What is the Strangler Fig pattern in the context of system migration?
+<details><summary>View Answer</summary>
+<b>Answer:</b> Incrementally rewriting specific modules of a legacy system while keeping the rest intact, slowly "strangling" the old codebase until it's completely replaced.
+</details>
+
+12. Why is name mangling a problem when calling C++ functions from Rust?
+<details><summary>View Answer</summary>
+<b>Answer:</b> C++ changes function names to encode type information, making it impossible for Rust to link to the function by its original name unless `extern "C"` is used.
+</details>
+
+13. What is the type of a raw, immutable pointer in Rust?
+<details><summary>View Answer</summary>
+<b>Answer:</b> `*const T`
+</details>
+
+14. How do you convert a Rust `&str` into a C-compatible null-terminated string?
+<details><summary>View Answer</summary>
+<b>Answer:</b> Using the `std::ffi::CString` type.
+</details>
+
+15. What type represents a borrowed C-compatible string in Rust?
+<details><summary>View Answer</summary>
+<b>Answer:</b> `std::ffi::CStr`
+</details>
+
+16. What does `bindgen` need in order to generate Rust bindings from C++?
+<details><summary>View Answer</summary>
+<b>Answer:</b> The C/C++ header files and the clang compiler toolchain.
+</details>
+
+17. Can you safely pass a Rust `Vec<T>` directly across an FFI boundary to a C++ function?
+<details><summary>View Answer</summary>
+<b>Answer:</b> No, the memory layout of `Vec` is specific to Rust. You must pass a pointer to its buffer (`as_ptr()`) and its length.
+</details>
+
+18. What is the purpose of `std::mem::forget` in FFI?
+<details><summary>View Answer</summary>
+<b>Answer:</b> To prevent Rust from running the destructor on an object, often used when ownership of the memory is being transferred to C++.
+</details>
+
+19. How do you construct a safe Rust slice from a raw pointer and a length received from C++?
+<details><summary>View Answer</summary>
+<b>Answer:</b> Using `std::slice::from_raw_parts` inside an `unsafe` block.
+</details>
+
+20. What trait must a Rust struct derive to ensure its memory layout matches the C equivalent?
+<details><summary>View Answer</summary>
+<b>Answer:</b> `#[repr(C)]`
+</details>
+
+21. What happens if a Rust panic crosses an FFI boundary into C++ code?
+<details><summary>View Answer</summary>
+<b>Answer:</b> It causes Undefined Behavior and will likely crash the process. Panics must be caught using `catch_unwind` before crossing the boundary.
+</details>
+
+22. What does monomorphization mean in the context of Rust generics?
+<details><summary>View Answer</summary>
+<b>Answer:</b> The compiler generates a unique copy of the function/type for each specific type it is used with, which can increase binary size but maximizes execution speed.
+</details>
+
+23. When profiling a hybrid C++/Rust application, what tool can provide a unified flame graph spanning both languages?
+<details><summary>View Answer</summary>
+<b>Answer:</b> `perf`, since both use the system ABI and DWARF debug info.
+</details>
+
+24. What is the typical bottleneck in a heavily integrated hybrid C++/Rust application?
+<details><summary>View Answer</summary>
+<b>Answer:</b> The FFI boundary, specifically the overhead of translating and copying complex data types between the two memory domains.
+</details>
+
+25. Can `cbindgen` generate C++ classes with virtual methods from Rust structs?
+<details><summary>View Answer</summary>
+<b>Answer:</b> No, FFI relies on the C ABI, which only supports plain structs and global functions, not C++ objects or virtual tables.
+</details>
+
+26. What does `unsafe { ... }` block specifically allow you to do with an `extern` function?
+<details><summary>View Answer</summary>
+<b>Answer:</b> It allows you to call the function, as the Rust compiler cannot verify the memory safety of external code.
+</details>
+
+27. What is `std::os::raw::c_int` used for in Rust?
+<details><summary>View Answer</summary>
+<b>Answer:</b> It guarantees that the Rust integer type perfectly matches the size and alignment of a standard `int` in C for the target platform.
+</details>
+
+28. How do you allocate memory in Rust that needs to be manually freed by C++ code?
+<details><summary>View Answer</summary>
+<b>Answer:</b> Allocate it using Rust's global allocator (e.g., `Box::into_raw`), pass the pointer to C++, and provide an `extern "C"` function that C++ can call to free the pointer using `Box::from_raw`.
+</details>
+
+29. Why might a Rust binary be statically larger than an equivalent C++ binary?
+<details><summary>View Answer</summary>
+<b>Answer:</b> Rust statically links its standard library by default, whereas C++ usually dynamically links against `libstdc++`.
+</details>
+
+30. In migration, why is it recommended to rewrite leaf nodes of the dependency graph first?
+<details><summary>View Answer</summary>
+<b>Answer:</b> Leaf nodes (like utility libraries) don't depend on other C++ code, making them easiest to port to Rust and then expose back to the rest of the C++ codebase via FFI.
+</details>

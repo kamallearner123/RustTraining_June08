@@ -16,19 +16,19 @@
 
 This corporate-level program enables the transition from legacy C++ systems to modern, safe, portable architectures using Modern C++, Rust, and WebAssembly. 
 
-### [Day 1: Advanced C++ Debugging on Linux (RHEL 9)](day1_advanced_cpp_debugging.md)
+### [Day 1: Advanced C++ Debugging on Linux (RHEL 9)](Day1/README.md)
 Focus on advanced debugging fundamentals, GDB mastery, crash & core dump analysis, memory debugging, and performance debugging.
 
-### [Day 2: Modern C++ (C++20 / C++23)](day2_modern_cpp.md)
+### [Day 2: Modern C++ (C++20 / C++23)](Day2/README.md)
 Dive into modern language design, C++20 features (Concepts, Ranges), Concurrency & Coroutines, modern libraries (fmt, spdlog), and C++23 highlights.
 
-### [Day 3: Rust Programming Fundamentals](day3_rust_fundamentals.md)
+### [Day 3: Rust Programming Fundamentals](Day3/README.md)
 Learn Rust philosophy, ownership model, type system, error handling, and fearless concurrency.
 
-### [Day 4: C++ to Rust Migration + Interoperability](day4_cpp_to_rust_migration_interop.md)
+### [Day 4: C++ to Rust Migration + Interoperability](Day4/README.md)
 Cover migration strategy, C++ ↔ Rust Interop (FFI), Unsafe Rust, performance comparison, and a real migration case study.
 
-### [Day 5: Web Assembly (WASM) + Integrated Architecture](day5_wasm_integrated_architecture.md)
+### [Day 5: Web Assembly (WASM) + Integrated Architecture](Day5/README.md)
 Understand WASM fundamentals, toolchains, WASI & Runtime, performance & security, and end-to-end system design.
 
 ## Key Value for Client

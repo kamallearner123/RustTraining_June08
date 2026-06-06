@@ -173,3 +173,103 @@ fn main() {
 <details><summary>View Answer</summary>
 <b>Answer:</b> Rust's official package manager and build system.
 </details>
+
+11. What is the standard library trait in Rust that handles the destruction and cleanup of resources?
+<details><summary>View Answer</summary>
+<b>Answer:</b> `Drop`
+</details>
+
+12. Can a struct implement the `Drop` trait and the `Copy` trait at the same time?
+<details><summary>View Answer</summary>
+<b>Answer:</b> No, `Copy` requires bitwise duplication, which is incompatible with custom destruction logic.
+</details>
+
+13. How do you explicitly denote the lifetime of a reference parameter in a Rust function signature?
+<details><summary>View Answer</summary>
+<b>Answer:</b> Using a tick followed by a lowercase name, like `&'a i32`.
+</details>
+
+14. What does the `static` lifetime mean?
+<details><summary>View Answer</summary>
+<b>Answer:</b> The reference points to data that lives for the entire duration of the program (like string literals).
+</details>
+
+15. What Rust keyword is used to implement a trait for a specific type?
+<details><summary>View Answer</summary>
+<b>Answer:</b> `impl` (e.g., `impl Trait for Type`)
+</details>
+
+16. What is the `unwrap()` method primarily used for?
+<details><summary>View Answer</summary>
+<b>Answer:</b> Extracting the inner value from an `Option` or `Result`, panicking immediately if it contains `None` or `Err`.
+</details>
+
+17. Which operator acts as shorthand for checking a `Result`, returning early with an error on `Err`, or extracting the value on `Ok`?
+<details><summary>View Answer</summary>
+<b>Answer:</b> The question mark operator (`?`)
+</details>
+
+18. What is the difference between `String` and `&str` in Rust?
+<details><summary>View Answer</summary>
+<b>Answer:</b> `String` is an owned, heap-allocated, growable string. `&str` is an immutable, borrowed string slice.
+</details>
+
+19. How do you declare a mutable variable in Rust?
+<details><summary>View Answer</summary>
+<b>Answer:</b> Using the `mut` keyword (e.g., `let mut x = 5;`). Variables are immutable by default.
+</details>
+
+20. What is a "Trait Object" in Rust?
+<details><summary>View Answer</summary>
+<b>Answer:</b> A way to achieve dynamic dispatch (polymorphism at runtime), using the `dyn Trait` syntax.
+</details>
+
+21. What macro is commonly used to format strings without printing them to standard output?
+<details><summary>View Answer</summary>
+<b>Answer:</b> `format!`
+</details>
+
+22. What does `RwLock` provide that `Mutex` does not?
+<details><summary>View Answer</summary>
+<b>Answer:</b> It allows multiple concurrent readers, only locking exclusively when a write is requested.
+</details>
+
+23. How do channels work for concurrency in Rust standard library?
+<details><summary>View Answer</summary>
+<b>Answer:</b> They allow threads to communicate by sending messages via a `Sender` (mpsc: multi-producer) to a `Receiver` (single-consumer).
+</details>
+
+24. What does the `move` keyword do when placed before a closure?
+<details><summary>View Answer</summary>
+<b>Answer:</b> It forces the closure to take ownership of the variables it captures from its environment.
+</details>
+
+25. What is the purpose of the `std::marker::PhantomData` type?
+<details><summary>View Answer</summary>
+<b>Answer:</b> It tells the compiler that a struct acts as though it stores a value of a certain type, even if it doesn't, usually to ensure proper drop checking or variance.
+</details>
+
+26. In Rust, what happens if an array index is out of bounds at runtime?
+<details><summary>View Answer</summary>
+<b>Answer:</b> The program immediately panics (halts safely), preventing a buffer overflow security vulnerability.
+</details>
+
+27. What is the `Cargo.toml` file used for?
+<details><summary>View Answer</summary>
+<b>Answer:</b> It is the manifest file for Cargo, used to specify project metadata and dependencies.
+</details>
+
+28. Which Rust feature replaces the concept of inheritance from object-oriented programming?
+<details><summary>View Answer</summary>
+<b>Answer:</b> Traits and Trait composition.
+</details>
+
+29. What is a generic type in Rust?
+<details><summary>View Answer</summary>
+<b>Answer:</b> A placeholder for a type that is resolved at compile time, allowing the same code to work with multiple types (similar to C++ templates).
+</details>
+
+30. Can you modify a variable that has an active immutable reference pointing to it?
+<details><summary>View Answer</summary>
+<b>Answer:</b> No, Rust enforces that while any immutable reference exists, the underlying value cannot be modified.
+</details>

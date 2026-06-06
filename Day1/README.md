@@ -517,3 +517,103 @@ int main() {
 <details><summary>View Answer</summary>
 <b>Answer:</b> Stack depth (call stack frames)
 </details>
+
+11. What is the primary difference between a Segmentation Fault and an Abort signal (SIGABRT)?
+<details><summary>View Answer</summary>
+<b>Answer:</b> Segfault is an invalid memory access; Abort is usually triggered intentionally by the program (e.g., glibc detecting a double free).
+</details>
+
+12. How can you find the specific line of code that triggered a crash inside GDB using a core dump?
+<details><summary>View Answer</summary>
+<b>Answer:</b> Run `gdb <binary> <core>`, then use the `bt` (backtrace) or `where` command.
+</details>
+
+13. Which command in GDB allows you to move up the call stack to inspect variables in the caller function?
+<details><summary>View Answer</summary>
+<b>Answer:</b> `up`
+</details>
+
+14. What does the `-Og` compiler flag do in GCC/Clang?
+<details><summary>View Answer</summary>
+<b>Answer:</b> It enables optimizations that do not interfere with debugging, providing a balance between performance and debuggability.
+</details>
+
+15. In AddressSanitizer (ASAN), what does the error `heap-buffer-overflow` signify?
+<details><summary>View Answer</summary>
+<b>Answer:</b> The program read from or wrote to memory outside the bounds of a dynamically allocated heap chunk.
+</details>
+
+16. Can Valgrind (Memcheck) detect out-of-bounds access on stack-allocated arrays?
+<details><summary>View Answer</summary>
+<b>Answer:</b> Usually no; Memcheck is primarily designed for heap allocations. ASAN is much better for stack bounds checking.
+</details>
+
+17. In GDB, how do you set a breakpoint that triggers only for a specific thread ID?
+<details><summary>View Answer</summary>
+<b>Answer:</b> `break <location> thread <thread_id>`
+</details>
+
+18. What is the purpose of the `thread apply all` command in GDB?
+<details><summary>View Answer</summary>
+<b>Answer:</b> It executes a specified GDB command (like `bt`) across all currently known threads.
+</details>
+
+19. Which Linux signal is sent by default when a program attempts to divide by zero?
+<details><summary>View Answer</summary>
+<b>Answer:</b> SIGFPE (Floating-Point Exception)
+</details>
+
+20. What information does the `nm` tool provide when run on a Linux binary?
+<details><summary>View Answer</summary>
+<b>Answer:</b> It lists the symbols (functions, global variables) stored in the object file.
+</details>
+
+21. What happens if you compile a C++ program without the `-g` flag and try to debug it with GDB?
+<details><summary>View Answer</summary>
+<b>Answer:</b> GDB will show assembly instructions and memory addresses, but won't map them back to variable names or source code lines.
+</details>
+
+22. Which command would you use to attach GDB to an already running process with PID 1234?
+<details><summary>View Answer</summary>
+<b>Answer:</b> `gdb -p 1234`
+</details>
+
+23. In `perf report`, what does a high percentage in the "Self" column indicate?
+<details><summary>View Answer</summary>
+<b>Answer:</b> The function itself is consuming those CPU cycles directly, not its children/callees.
+</details>
+
+24. What type of issue causes "False Sharing" in a multi-threaded application?
+<details><summary>View Answer</summary>
+<b>Answer:</b> Multiple threads modifying independent variables that happen to reside on the same CPU cache line, causing constant cache invalidations.
+</details>
+
+25. How does UndefinedBehaviorSanitizer (UBSAN) handle a detected issue by default?
+<details><summary>View Answer</summary>
+<b>Answer:</b> It prints an error message to standard error and continues execution, unlike ASAN which usually halts the program.
+</details>
+
+26. What does `std::memory_order_relaxed` guarantee in C++11 atomics?
+<details><summary>View Answer</summary>
+<b>Answer:</b> It guarantees atomicity of the operation on that specific variable, but enforces no synchronization or ordering constraints on surrounding memory operations.
+</details>
+
+27. Why are core dumps sometimes disabled by default on production Linux systems?
+<details><summary>View Answer</summary>
+<b>Answer:</b> To save disk space and to prevent leakage of sensitive memory data.
+</details>
+
+28. What is a "data race" in C++?
+<details><summary>View Answer</summary>
+<b>Answer:</b> When two or more threads concurrently access the same memory location, at least one access is a write, and the accesses are not synchronized.
+</details>
+
+29. In a CPU Flame Graph, what does the width of a box represent?
+<details><summary>View Answer</summary>
+<b>Answer:</b> The frequency/population of that function appearing in the sampled call stacks (i.e., how much CPU time it took).
+</details>
+
+30. When reverse debugging in GDB, what command initiates the recording of execution state?
+<details><summary>View Answer</summary>
+<b>Answer:</b> `record` (or `target record-full`)
+</details>

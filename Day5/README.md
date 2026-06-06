@@ -132,3 +132,103 @@ You are tasked with building a processing pipeline that incorporates all technol
 <details><summary>View Answer</summary>
 <b>Answer:</b> It acts as the safe orchestrator, using FFI to interface with legacy C++ and executing WASM modules securely within its runtime environment.
 </details>
+
+11. Which data types does WebAssembly natively support?
+<details><summary>View Answer</summary>
+<b>Answer:</b> Only four numeric types: i32, i64, f32, and f64. Complex types must be represented as bytes in linear memory.
+</details>
+
+12. What is WASM's "Linear Memory"?
+<details><summary>View Answer</summary>
+<b>Answer:</b> A contiguous, resizable array of bytes that the WASM module can read and write to, isolated from the host's memory.
+</details>
+
+13. Can a WebAssembly module directly access the DOM in a web browser?
+<details><summary>View Answer</summary>
+<b>Answer:</b> No, it must call imported JavaScript functions to interact with the DOM.
+</details>
+
+14. What does the `wasm-bindgen` tool do in the Rust ecosystem?
+<details><summary>View Answer</summary>
+<b>Answer:</b> It generates the JavaScript glue code and WASM import/export definitions needed to pass complex types (like strings and objects) between Rust and JS.
+</details>
+
+15. What format is a compiled WebAssembly file?
+<details><summary>View Answer</summary>
+<b>Answer:</b> A compact binary format (`.wasm`). There is also a human-readable text format (`.wat`).
+</details>
+
+16. What is the Bytecode Alliance?
+<details><summary>View Answer</summary>
+<b>Answer:</b> An industry partnership forming standards and implementations for WebAssembly outside the browser (like Wasmtime and WASI).
+</details>
+
+17. Why is WebAssembly considered secure by default?
+<details><summary>View Answer</summary>
+<b>Answer:</b> It enforces a strict deny-by-default sandbox. A module cannot access the network, file system, or host memory without explicit capability grants.
+</details>
+
+18. What is `wasm32-wasi` in the context of Rust compilation?
+<details><summary>View Answer</summary>
+<b>Answer:</b> It is the compiler target triple used to build a WebAssembly module that uses the WASI standard for system calls.
+</details>
+
+19. How does execution speed of WASM compare to native C++ binaries?
+<details><summary>View Answer</summary>
+<b>Answer:</b> It is generally "near-native", typically running within 1.2x to 2x the execution time of a highly optimized native binary, depending on the runtime (JIT/AOT).
+</details>
+
+20. What is Ahead-of-Time (AOT) compilation in WASM runtimes?
+<details><summary>View Answer</summary>
+<b>Answer:</b> Compiling the `.wasm` binary into native machine code (e.g., x86_64) before running it, maximizing execution speed at the cost of slightly slower initial startup.
+</details>
+
+21. What is Just-in-Time (JIT) compilation in WASM runtimes?
+<details><summary>View Answer</summary>
+<b>Answer:</b> Compiling the `.wasm` binary into native machine code on-the-fly during execution.
+</details>
+
+22. In an Edge Computing scenario, what advantage does WASM have over V8 Isolates?
+<details><summary>View Answer</summary>
+<b>Answer:</b> WASM is language-agnostic (can run Rust, C++, Go, Python) whereas V8 Isolates are strictly for JavaScript/WASM engines. WASM modules are often smaller and faster to load.
+</details>
+
+23. What is the component model in WebAssembly?
+<details><summary>View Answer</summary>
+<b>Answer:</b> A proposal/standard to allow WASM modules written in different languages to seamlessly interoperate and link together without knowing each other's memory layouts.
+</details>
+
+24. How do you pass a string from a host environment into a WASM module using standard linear memory?
+<details><summary>View Answer</summary>
+<b>Answer:</b> The host writes the string bytes into the WASM module's memory, then calls a WASM function passing the pointer (offset) and length.
+</details>
+
+25. What is the primary use case for Emscripten?
+<details><summary>View Answer</summary>
+<b>Answer:</b> Porting large, existing C/C++ codebases (like game engines or desktop apps) to run in the web browser, providing a simulated POSIX environment.
+</details>
+
+26. Can you run a WebAssembly module on an embedded microcontroller?
+<details><summary>View Answer</summary>
+<b>Answer:</b> Yes, using specialized micro-runtimes like Wasm3 or WAMR (WebAssembly Micro Runtime) that require very little RAM.
+</details>
+
+27. What is the difference between `wasm-pack build --target web` and `--target nodejs`?
+<details><summary>View Answer</summary>
+<b>Answer:</b> The `web` target generates ES modules suitable for browsers, while `nodejs` generates CommonJS modules specifically tailored for Node.js.
+</details>
+
+28. How does WASM ensure control-flow integrity?
+<details><summary>View Answer</summary>
+<b>Answer:</b> It uses structured control flow (blocks, loops, ifs) rather than arbitrary jumps (gotos), preventing execution of arbitrary data as code.
+</details>
+
+29. What is the "host" in WebAssembly terminology?
+<details><summary>View Answer</summary>
+<b>Answer:</b> The runtime environment (browser, Wasmtime, Node.js) that embeds and executes the WebAssembly module.
+</details>
+
+30. In our end-to-end architecture, why run a WASM module inside a Rust microservice?
+<details><summary>View Answer</summary>
+<b>Answer:</b> It allows the service to securely execute untrusted third-party code (like user-submitted plugins or scripts) without risking the integrity of the core service.
+</details>
