@@ -1,4 +1,4 @@
-# Day 1: Advanced C++ Debugging on Linux (RHEL 9)
+# Day 1: Advanced C Debugging on Linux (RHEL 9)
 
 ## Overview
 Welcome to Day 1! Today's focus is on mastering debugging techniques in a Linux environment for C++ applications. We cover the transition from basic to advanced debugging, core dumps, memory diagnostics, and performance analysis. This guide is heavily expanded with 15 practical examples to demonstrate exact failure modes and how to diagnose them.
@@ -16,8 +16,8 @@ The purpose of this session is to distinguish between optimized (`-O2`, `-O3`) a
 
 ### 1. Code Example: Stack Overflow
 A classic stack overflow caused by infinite recursion. This will immediately cause a Segmentation Fault (SIGSEGV).
-```cpp
-#include <iostream>
+```c
+#include <stdio.h>
 
 void recursiveCall(int count) {
     // Missing base case
@@ -27,7 +27,7 @@ void recursiveCall(int count) {
 }
 
 int main() {
-    std::cout << "Starting recursion..." << std::endl;
+    printf("Starting recursion...\n");
     recursiveCall(1); // Will crash with SIGSEGV (Segmentation fault)
     return 0;
 }
@@ -35,26 +35,28 @@ int main() {
 
 ### 2. Code Example: Heap Corruption (Out of Bounds)
 Writing past the allocated boundary on the heap. The crash often doesn't happen during the write, but later during `delete[]` when the heap manager realizes its metadata is corrupted.
-```cpp
-#include <iostream>
-#include <cstring>
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 void heapCorruption() {
-    char* buffer = new char[10];
+    char* buffer = (char*)malloc(10);
     // Writing 40 bytes into a 10-byte buffer!
-    std::strcpy(buffer, "This string is way too long for 10 bytes");
-    std::cout << buffer << std::endl;
+    strcpy(buffer, "This string is way too long for 10 bytes");
+    printf("%s\n", buffer);
     
     // Crash usually happens right here, as the memory allocator's 
     // internal bookkeeping structures were overwritten by strcpy.
-    delete[] buffer; 
+    free(buffer); 
 }
 ```
 
 ### 3. Code Example: Uninitialized Variable Read
 Reading an uninitialized local variable means reading whatever garbage value was left on the stack. In debug builds, this might be zero. In release builds, it causes erratic behavior.
-```cpp
-#include <iostream>
+```c
+#include <stdio.h>
+#include <stdbool.h>
 
 int calculateResult(bool flag) {
     int result; // Uninitialized
@@ -66,7 +68,7 @@ int calculateResult(bool flag) {
 }
 
 int main() {
-    std::cout << "Result: " << calculateResult(false) << std::endl;
+    printf("Result: %d\n", calculateResult(false));
     return 0;
 }
 ```
@@ -84,8 +86,8 @@ GDB is the standard debugger on Linux. This session aims to turn basic users int
 
 ### 4. Code Example: Conditional Breakpoints and Watchpoints
 Imagine a loop running 10,000 times, but it only fails on the 9,999th iteration.
-```cpp
-#include <iostream>
+```c
+#include <stdio.h>
 
 int main() {
     int critical_value = 0;
@@ -94,7 +96,7 @@ int main() {
             critical_value = 1; // BUG triggers here
         }
     }
-    std::cout << critical_value << std::endl;
+    printf("%d\n", critical_value);
     return 0;
 }
 // In GDB:
@@ -105,25 +107,28 @@ int main() {
 
 ### 5. Code Example: Data Race (Multi-threaded)
 When two threads access shared memory without synchronization.
-```cpp
-#include <thread>
-#include <vector>
-#include <iostream>
+```c
+#include <pthread.h>
+#include <stdio.h>
 
 int shared_counter = 0;
 
-void increment() {
+void* increment(void* arg) {
     for (int i = 0; i < 100000; ++i) {
         shared_counter++; // Not atomic! Data race!
     }
+    return NULL;
 }
 
 int main() {
-    std::thread t1(increment);
-    std::thread t2(increment);
-    t1.join(); t2.join();
+    pthread_t t1, t2;
+    pthread_create(&t1, NULL, increment, NULL);
+    pthread_create(&t2, NULL, increment, NULL);
+    pthread_join(t1, NULL); 
+    pthread_join(t2, NULL);
     // Result will be random, less than 200000
-    std::cout << "Counter: " << shared_counter << std::endl;
+    printf("Counter: %d\n", shared_counter);
+    return 0;
 }
 // In GDB:
 // (gdb) info threads
@@ -132,19 +137,21 @@ int main() {
 
 ### 6. Code Example: Segfault in a Loop (Reverse Debugging)
 A bug that corrupts a pointer midway through a process.
-```cpp
-#include <iostream>
+```c
+#include <stdlib.h>
 
 int main() {
-    int* ptr = new int(10);
+    int* ptr = (int*)malloc(sizeof(int));
+    *ptr = 10;
     for (int i = 0; i < 100; ++i) {
         if (i == 50) {
-            ptr = nullptr; // Pointer suddenly becomes null
+            ptr = NULL; // Pointer suddenly becomes null
         }
         if (i == 75) {
             *ptr = 20; // Segfault here!
         }
     }
+    return 0;
 }
 // In GDB:
 // (gdb) run (crashes at line 10)
@@ -165,18 +172,20 @@ When an application crashes in production, you can't attach a debugger. Core dum
 
 ### 7. Code Example: Null Pointer Dereference
 A direct attempt to read or write to address `0x0`.
-```cpp
+```c
+#include <stdio.h>
+
 struct Config {
     int version;
 };
 
-void printConfig(Config* cfg) {
+void printConfig(struct Config* cfg) {
     // If cfg is null, reading cfg->version causes a SIGSEGV at address 0x0.
-    std::cout << "Version: " << cfg->version << std::endl; 
+    printf("Version: %d\n", cfg->version); 
 }
 
 int main() {
-    Config* myConfig = nullptr;
+    struct Config* myConfig = NULL;
     printConfig(myConfig); // Segfault
     return 0;
 }
@@ -184,17 +193,17 @@ int main() {
 
 ### 8. Code Example: Double Free Error
 Freeing the same block of memory twice corrupts the allocator's free list, causing `glibc` to abort the program (SIGABRT).
-```cpp
-#include <iostream>
+```c
+#include <stdlib.h>
 
 int main() {
-    int* data = new int[50];
+    int* data = (int*)malloc(50 * sizeof(int));
     
     // ... complex logic ...
-    delete[] data;
+    free(data);
     
     // ... later in the code ...
-    delete[] data; // Double free! Will generate a core dump via SIGABRT.
+    free(data); // Double free! Will generate a core dump via SIGABRT.
     
     return 0;
 }
@@ -202,29 +211,34 @@ int main() {
 
 ### 9. Code Example: Deadlock (Hang Dump Analysis)
 The application doesn't crash, it just freezes. You can send `SIGABRT` to a hung process to force a core dump and analyze the thread states.
-```cpp
-#include <thread>
-#include <mutex>
+```c
+#include <pthread.h>
+#include <unistd.h>
 
-std::mutex mtx1;
-std::mutex mtx2;
+pthread_mutex_t mtx1 = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mtx2 = PTHREAD_MUTEX_INITIALIZER;
 
-void threadA() {
-    std::lock_guard<std::mutex> lock1(mtx1);
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    std::lock_guard<std::mutex> lock2(mtx2); // Waiting for mtx2
+void* threadA(void* arg) {
+    pthread_mutex_lock(&mtx1);
+    usleep(10000);
+    pthread_mutex_lock(&mtx2); // Waiting for mtx2
+    return NULL;
 }
 
-void threadB() {
-    std::lock_guard<std::mutex> lock2(mtx2);
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    std::lock_guard<std::mutex> lock1(mtx1); // Waiting for mtx1 -> DEADLOCK
+void* threadB(void* arg) {
+    pthread_mutex_lock(&mtx2);
+    usleep(10000);
+    pthread_mutex_lock(&mtx1); // Waiting for mtx1 -> DEADLOCK
+    return NULL;
 }
 
 int main() {
-    std::thread t1(threadA);
-    std::thread t2(threadB);
-    t1.join(); t2.join();
+    pthread_t t1, t2;
+    pthread_create(&t1, NULL, threadA, NULL);
+    pthread_create(&t2, NULL, threadB, NULL);
+    pthread_join(t1, NULL); 
+    pthread_join(t2, NULL);
+    return 0;
 }
 // To analyze: `kill -ABRT <pid>`, then `gdb ./binary ./core`, then `thread apply all bt`
 ```
@@ -242,59 +256,63 @@ Memory bugs (leaks, use-after-free, uninitialized reads) are the hardest to trac
 
 ### 10. Code Example: Classic Memory Leak
 Memory is allocated but never released. Long-running services will eventually run out of RAM (OOM killed).
-```cpp
+```c
+#include <stdlib.h>
+
 void handleRequest() {
-    int* sessionData = new int[1024]; // 4KB allocated
+    int* sessionData = (int*)malloc(1024 * sizeof(int)); // 4KB allocated
     // Process request...
     
-    // Forgot to delete[] sessionData;
+    // Forgot to free(sessionData);
 }
 
 int main() {
-    while(true) handleRequest(); // Leak loop
+    while(1) handleRequest(); // Leak loop
+    return 0;
 }
-// Compile with: g++ -g -fsanitize=address leak.cpp
+// Compile with: gcc -g -fsanitize=address leak.c
 // ASAN will report: "Direct leak of 4096 byte(s)"
 ```
 
 ### 11. Code Example: Use-After-Free
 Accessing memory after it has been returned to the heap. Extremely dangerous security vulnerability.
-```cpp
-#include <iostream>
+```c
+#include <stdio.h>
+#include <stdlib.h>
 
 int main() {
-    int* array = new int[100];
+    int* array = (int*)malloc(100 * sizeof(int));
     array[0] = 42;
     
-    delete[] array; // Memory freed
+    free(array); // Memory freed
     
     // Accessing freed memory! 
     // Without ASAN, this might silently print garbage or crash later.
     // WITH ASAN, it instantly halts and prints a beautiful trace.
-    std::cout << array[0] << std::endl; 
+    printf("%d\n", array[0]); 
     
     return 0;
 }
-// Compile with: g++ -g -fsanitize=address uaf.cpp
+// Compile with: gcc -g -fsanitize=address uaf.c
 // ASAN will report: "heap-use-after-free"
 ```
 
 ### 12. Code Example: Signed Integer Overflow (UBSAN)
 In C++, signed integer overflow is Undefined Behavior. Compilers optimize assuming it never happens.
-```cpp
-#include <iostream>
-#include <limits>
+```c
+#include <stdio.h>
+#include <limits.h>
 
 int main() {
-    int max_int = std::numeric_limits<int>::max(); // 2147483647
+    int max_int = INT_MAX; // 2147483647
     
     // This is Undefined Behavior!
     int overflowed = max_int + 1; 
     
-    std::cout << overflowed << std::endl;
+    printf("%d\n", overflowed);
     return 0;
 }
-// Compile with: g++ -g -fsanitize=undefined overflow.cpp
+// Compile with: gcc -g -fsanitize=undefined overflow.c
 // UBSAN will report: "signed integer overflow: 2147483647 + 1 cannot be represented in type 'int'"
 ```
 
@@ -311,10 +329,7 @@ When CPU usage is at 100% or your application feels sluggish, guessing won't hel
 
 ### 13. Code Example: The 100% CPU Busy Loop
 A thread stuck in a loop without sleeping, consuming an entire CPU core.
-```cpp
-#include <vector>
-#include <numeric>
-
+```c
 void heavyComputation() {
     volatile long sum = 0; // Volatile prevents compiler from optimizing loop away
     for(long i = 0; i < 10000000000; ++i) {
@@ -332,9 +347,8 @@ int main() {
 
 ### 14. Code Example: False Sharing (Cache Line Bouncing)
 Two threads updating independent variables that happen to reside on the same 64-byte CPU cache line. They constantly invalidate each other's cache, destroying performance.
-```cpp
-#include <thread>
-#include <vector>
+```c
+#include <pthread.h>
 
 struct Counters {
     int thread1_count;
@@ -342,14 +356,18 @@ struct Counters {
     int thread2_count;
 };
 
-Counters global_counters;
+struct Counters global_counters;
 
-void work1() { for(int i=0; i<100000000; i++) global_counters.thread1_count++; }
-void work2() { for(int i=0; i<100000000; i++) global_counters.thread2_count++; }
+void* work1(void* arg) { for(int i=0; i<100000000; i++) global_counters.thread1_count++; return NULL; }
+void* work2(void* arg) { for(int i=0; i<100000000; i++) global_counters.thread2_count++; return NULL; }
 
 int main() {
-    std::thread t1(work1); std::thread t2(work2);
-    t1.join(); t2.join();
+    pthread_t t1, t2;
+    pthread_create(&t1, NULL, work1, NULL);
+    pthread_create(&t2, NULL, work2, NULL);
+    pthread_join(t1, NULL); 
+    pthread_join(t2, NULL);
+    return 0;
 }
 // Run: perf stat -e cache-misses ./app
 // Will show massive L1 cache misses compared to the padded version.
@@ -357,36 +375,36 @@ int main() {
 
 ### 15. Code Example: Branch Prediction Failure
 Processing unsorted data causes the CPU's branch predictor to fail 50% of the time, flushing the execution pipeline.
-```cpp
-#include <vector>
-#include <algorithm>
-#include <random>
+```c
+#include <stdlib.h>
 
-int processData(std::vector<int>& data) {
+int processData(int* data, int size) {
     int sum = 0;
-    // If 'data' is sorted before this loop, it runs roughly 3x faster!
-    // std::sort(data.begin(), data.end()); 
-    for (int x : data) {
-        if (x > 128) { // Unpredictable branch if data is random
-            sum += x;
+    // qsort(data, size, sizeof(int), compare);
+    for (int i = 0; i < size; i++) {
+        if (data[i] > 128) { // Unpredictable branch if data is random
+            sum += data[i];
         }
     }
     return sum;
 }
 
 int main() {
-    std::vector<int> data(1000000);
-    // Fill with random data 0-255...
-    processData(data);
+    int size = 1000000;
+    int* data = (int*)malloc(size * sizeof(int));
+    for(int i = 0; i < size; i++) data[i] = rand() % 256;
+    processData(data, size);
+    free(data);
+    return 0;
 }
 // Run: perf stat -e branch-misses ./app
 ```
 
 ---
 
-## Session 6: Debugging C++ Memory Models
+## Session 6: Debugging C Memory Models
 ### Introduction
-C++11 introduced a formal memory model. While `std::mutex` provides sequential consistency (the easiest to reason about), lock-free programming requires understanding atomic operations and memory ordering. Debugging memory ordering bugs is notoriously difficult because they manifest as intermittent data races or logical inconsistencies on specific CPU architectures (like ARM).
+C11 introduced a formal memory model. While `std::mutex` provides sequential consistency (the easiest to reason about), lock-free programming requires understanding atomic operations and memory ordering. Debugging memory ordering bugs is notoriously difficult because they manifest as intermittent data races or logical inconsistencies on specific CPU architectures (like ARM).
 
 ### Important Points
 - **Sequential Consistency (`std::memory_order_seq_cst`):** The default. All threads see all operations in the exact same order.
@@ -395,59 +413,71 @@ C++11 introduced a formal memory model. While `std::mutex` provides sequential c
 
 ### 16. Code Example: Relaxed Ordering Data Race (Logical)
 Using relaxed ordering can lead to threads seeing values out of order if not synchronized properly.
-```cpp
-#include <atomic>
-#include <thread>
-#include <iostream>
+```c
+#include <stdatomic.h>
+#include <pthread.h>
+#include <stdio.h>
 
-std::atomic<int> x(0);
-std::atomic<int> y(0);
+atomic_int x = 0;
+atomic_int y = 0;
 int r1 = 0, r2 = 0;
 
-void thread1() {
-    x.store(1, std::memory_order_relaxed);
-    r1 = y.load(std::memory_order_relaxed);
+void* thread1(void* arg) {
+    atomic_store_explicit(&x, 1, memory_order_relaxed);
+    r1 = atomic_load_explicit(&y, memory_order_relaxed);
+    return NULL;
 }
 
-void thread2() {
-    y.store(1, std::memory_order_relaxed);
-    r2 = x.load(std::memory_order_relaxed);
+void* thread2(void* arg) {
+    atomic_store_explicit(&y, 1, memory_order_relaxed);
+    r2 = atomic_load_explicit(&x, memory_order_relaxed);
+    return NULL;
 }
 
 int main() {
-    std::thread t1(thread1); std::thread t2(thread2);
-    t1.join(); t2.join();
+    pthread_t t1, t2;
+    pthread_create(&t1, NULL, thread1, NULL);
+    pthread_create(&t2, NULL, thread2, NULL);
+    pthread_join(t1, NULL); 
+    pthread_join(t2, NULL);
     // It is possible for both r1 == 0 AND r2 == 0 because 
     // the CPU/Compiler is free to reorder the load before the store!
-    std::cout << "r1: " << r1 << ", r2: " << r2 << std::endl;
+    printf("r1: %d, r2: %d\n", r1, r2);
+    return 0;
 }
 ```
 
 ### 17. Code Example: Safe Acquire-Release
 Correctly synchronizing a payload using acquire-release semantics.
-```cpp
-#include <atomic>
-#include <thread>
-#include <iostream>
+```c
+#include <stdatomic.h>
+#include <pthread.h>
+#include <stdio.h>
 
-std::atomic<bool> ready(false);
+atomic_bool ready = false;
 int payload = 0;
 
-void producer() {
+void* producer(void* arg) {
     payload = 42; // Normal memory write
     // Release ensures 'payload=42' happens before 'ready=true' becomes visible
-    ready.store(true, std::memory_order_release); 
+    atomic_store_explicit(&ready, true, memory_order_release); 
+    return NULL;
 }
 
-void consumer() {
+void* consumer(void* arg) {
     // Acquire ensures we don't read 'payload' until 'ready' is truly true
-    while (!ready.load(std::memory_order_acquire)) {} 
-    std::cout << "Payload: " << payload << std::endl; // Safely prints 42
+    while (!atomic_load_explicit(&ready, memory_order_acquire)) {} 
+    printf("Payload: %d\n", payload); // Safely prints 42
+    return NULL;
 }
 
 int main() {
-    std::thread t1(producer); std::thread t2(consumer);
-    t1.join(); t2.join();
+    pthread_t t1, t2;
+    pthread_create(&t1, NULL, producer, NULL);
+    pthread_create(&t2, NULL, consumer, NULL);
+    pthread_join(t1, NULL); 
+    pthread_join(t2, NULL);
+    return 0;
 }
 ```
 
@@ -568,7 +598,7 @@ int main() {
 <b>Answer:</b> It lists the symbols (functions, global variables) stored in the object file.
 </details>
 
-21. What happens if you compile a C++ program without the `-g` flag and try to debug it with GDB?
+21. What happens if you compile a C program without the `-g` flag and try to debug it with GDB?
 <details><summary>View Answer</summary>
 <b>Answer:</b> GDB will show assembly instructions and memory addresses, but won't map them back to variable names or source code lines.
 </details>
@@ -593,7 +623,7 @@ int main() {
 <b>Answer:</b> It prints an error message to standard error and continues execution, unlike ASAN which usually halts the program.
 </details>
 
-26. What does `std::memory_order_relaxed` guarantee in C++11 atomics?
+26. What does `std::memory_order_relaxed` guarantee in C11 atomics?
 <details><summary>View Answer</summary>
 <b>Answer:</b> It guarantees atomicity of the operation on that specific variable, but enforces no synchronization or ordering constraints on surrounding memory operations.
 </details>
@@ -603,7 +633,7 @@ int main() {
 <b>Answer:</b> To save disk space and to prevent leakage of sensitive memory data.
 </details>
 
-28. What is a "data race" in C++?
+28. What is a "data race" in C?
 <details><summary>View Answer</summary>
 <b>Answer:</b> When two or more threads concurrently access the same memory location, at least one access is a write, and the accesses are not synchronized.
 </details>

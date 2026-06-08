@@ -16,7 +16,7 @@
 
 This corporate-level program enables the transition from legacy C++ systems to modern, safe, portable architectures using Modern C++, Rust, and WebAssembly. 
 
-### [Day 1: Advanced C Debugging on Linux (RHEL 9)](Day1/README.md)
+### [Day 1: Advanced C++ Debugging on Linux (RHEL 9)](Day1/README.md)
 Focus on advanced debugging fundamentals, GDB mastery, crash & core dump analysis, memory debugging, and performance debugging.
 
 ### [Day 2: Modern C++ (C++20 / C++23)](Day2/README.md)
