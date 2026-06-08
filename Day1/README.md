@@ -14,6 +14,15 @@ The purpose of this session is to distinguish between optimized (`-O2`, `-O3`) a
 - **DWARF Info:** This is the debugging data format used by ELF binaries. It maps instruction pointers back to source code lines. You can inspect it using `readelf -w binary`.
 - **Stack vs Heap Corruption:** Stack overflows usually cause immediate faults (e.g., recursive calls blowing the stack limit), while heap corruption might cause delayed faults somewhere else in the application, often far away from the actual bug.
 
+### GCC Optimization & Debugging Flags Reference
+| Flag | Purpose | Explanation |
+|---|---|---|
+| `-O0` | No Optimization | Best for debugging. Code execution matches source lines exactly. Variables are never optimized out. |
+| `-O2` / `-O3` | High Optimization | Maximizes performance. Heavily inlines functions and reorders instructions, making line-by-line debugging very difficult. |
+| `-Og` | Debug Optimization | A compromise that applies optimizations which do not interfere with debugging. Good for testing performance while keeping readable backtraces. |
+| `-g` | Generate Debug Symbols | Injects DWARF information into the binary mapping machine code to source code. Essential for GDB. |
+| `-fsanitize=address` | AddressSanitizer | Instruments memory allocations to detect out-of-bounds accesses and use-after-free bugs. |
+
 ### 1. Code Example: Stack Overflow
 A classic stack overflow caused by infinite recursion. This will immediately cause a Segmentation Fault (SIGSEGV).
 ```cpp
@@ -81,6 +90,18 @@ GDB is the standard debugger on Linux. This session aims to turn basic users int
 - **Conditional Breakpoints:** Use `break [location] if [condition]` to stop only when needed. Saves hours in tight loops.
 - **Watchpoints:** Hardware watchpoints (`watch [var]`) stop execution whenever the value of a variable changes in memory, without slowing down the application.
 - **Reverse Debugging:** Using `record`, you can step backwards (`reverse-step`, `reverse-continue`) to find the exact moment state mutated.
+
+### Essential GDB Commands Reference
+| Command | Shorthand | Explanation |
+|---|---|---|
+| `run` | `r` | Starts the execution of the program inside GDB. |
+| `break [loc]` | `b` | Sets a breakpoint at a specific line, function, or address. |
+| `next` / `step` | `n` / `s` | `next` executes the next line, stepping *over* function calls. `step` steps *into* function calls. |
+| `continue` | `c` | Resumes execution until the next breakpoint or crash. |
+| `backtrace` | `bt` | Prints the call stack, showing how the program reached its current state. |
+| `print [var]` | `p` | Evaluates and prints the value of a variable. |
+| `watch [var]` | `wa` | Sets a hardware watchpoint that pauses execution whenever the specified variable's memory is modified. |
+| `thread apply all bt` | (none) | Prints the backtrace for every currently running thread. Invaluable for diagnosing deadlocks. |
 
 ### 4. Code Example: Conditional Breakpoints and Watchpoints
 Imagine a loop running 10,000 times, but it only fails on the 9,999th iteration.
@@ -308,6 +329,14 @@ When CPU usage is at 100% or your application feels sluggish, guessing won't hel
 - **Perf Record & Report:** Run `perf record -g ./app` to record call graphs, and `perf report` to view an interactive TUI of CPU hogs.
 - **Flame Graphs:** Visual representation of `perf` output. The x-axis shows the population (percentage of samples), and the y-axis shows stack depth.
 - **Hardware Counters:** Use `perf stat` to measure low-level CPU metrics like L1/L2 cache misses and branch mispredictions.
+
+### Perf Profiling Reference
+| Command | Explanation |
+|---|---|
+| `perf record -g ./app` | Samples the CPU execution of `./app` at high frequency, capturing the call graph (`-g`) to understand exactly which functions are consuming CPU time. |
+| `perf report` | Opens an interactive Terminal UI to explore the data captured by `perf record`. |
+| `perf stat ./app` | Runs `./app` and prints a high-level summary of CPU hardware events (cycles, instructions, branches). |
+| `perf stat -e cache-misses ./app` | Specifically measures L1/L2 cache misses, crucial for detecting memory-bound performance issues like False Sharing. |
 
 ### 13. Code Example: The 100% CPU Busy Loop
 A thread stuck in a loop without sleeping, consuming an entire CPU core.
