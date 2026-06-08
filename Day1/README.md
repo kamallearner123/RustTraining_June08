@@ -1,4 +1,4 @@
-# Day 1: Advanced C++ Debugging on Linux (RHEL 9)
+# Day 1: Advanced C Debugging on Linux (RHEL 9)
 
 ## Overview
 Welcome to Day 1! Today's focus is on mastering debugging techniques in a Linux environment for C++ applications. We cover the transition from basic to advanced debugging, core dumps, memory diagnostics, and performance analysis. This guide is heavily expanded with 15 practical examples to demonstrate exact failure modes and how to diagnose them.
@@ -16,8 +16,8 @@ The purpose of this session is to distinguish between optimized (`-O2`, `-O3`) a
 
 ### 1. Code Example: Stack Overflow
 A classic stack overflow caused by infinite recursion. This will immediately cause a Segmentation Fault (SIGSEGV).
-```cpp
-#include <iostream>
+```c
+#include <stdio.h>
 
 void recursiveCall(int count) {
     // Missing base case
@@ -27,7 +27,7 @@ void recursiveCall(int count) {
 }
 
 int main() {
-    std::cout << "Starting recursion..." << std::endl;
+    printf("Starting recursion...\n");
     recursiveCall(1); // Will crash with SIGSEGV (Segmentation fault)
     return 0;
 }
@@ -35,26 +35,28 @@ int main() {
 
 ### 2. Code Example: Heap Corruption (Out of Bounds)
 Writing past the allocated boundary on the heap. The crash often doesn't happen during the write, but later during `delete[]` when the heap manager realizes its metadata is corrupted.
-```cpp
-#include <iostream>
-#include <cstring>
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 void heapCorruption() {
-    char* buffer = new char[10];
+    char* buffer = (char*)malloc(10);
     // Writing 40 bytes into a 10-byte buffer!
-    std::strcpy(buffer, "This string is way too long for 10 bytes");
-    std::cout << buffer << std::endl;
+    strcpy(buffer, "This string is way too long for 10 bytes");
+    printf("%s\n", buffer);
     
     // Crash usually happens right here, as the memory allocator's 
     // internal bookkeeping structures were overwritten by strcpy.
-    delete[] buffer; 
+    free(buffer); 
 }
 ```
 
 ### 3. Code Example: Uninitialized Variable Read
 Reading an uninitialized local variable means reading whatever garbage value was left on the stack. In debug builds, this might be zero. In release builds, it causes erratic behavior.
-```cpp
-#include <iostream>
+```c
+#include <stdio.h>
+#include <stdbool.h>
 
 int calculateResult(bool flag) {
     int result; // Uninitialized
@@ -66,7 +68,7 @@ int calculateResult(bool flag) {
 }
 
 int main() {
-    std::cout << "Result: " << calculateResult(false) << std::endl;
+    printf("Result: %d\n", calculateResult(false));
     return 0;
 }
 ```
@@ -165,18 +167,20 @@ When an application crashes in production, you can't attach a debugger. Core dum
 
 ### 7. Code Example: Null Pointer Dereference
 A direct attempt to read or write to address `0x0`.
-```cpp
+```c
+#include <stdio.h>
+
 struct Config {
     int version;
 };
 
-void printConfig(Config* cfg) {
+void printConfig(struct Config* cfg) {
     // If cfg is null, reading cfg->version causes a SIGSEGV at address 0x0.
-    std::cout << "Version: " << cfg->version << std::endl; 
+    printf("Version: %d\n", cfg->version); 
 }
 
 int main() {
-    Config* myConfig = nullptr;
+    struct Config* myConfig = NULL;
     printConfig(myConfig); // Segfault
     return 0;
 }
@@ -184,17 +188,17 @@ int main() {
 
 ### 8. Code Example: Double Free Error
 Freeing the same block of memory twice corrupts the allocator's free list, causing `glibc` to abort the program (SIGABRT).
-```cpp
-#include <iostream>
+```c
+#include <stdlib.h>
 
 int main() {
-    int* data = new int[50];
+    int* data = (int*)malloc(50 * sizeof(int));
     
     // ... complex logic ...
-    delete[] data;
+    free(data);
     
     // ... later in the code ...
-    delete[] data; // Double free! Will generate a core dump via SIGABRT.
+    free(data); // Double free! Will generate a core dump via SIGABRT.
     
     return 0;
 }
@@ -384,9 +388,9 @@ int main() {
 
 ---
 
-## Session 6: Debugging C++ Memory Models
+## Session 6: Debugging C Memory Models
 ### Introduction
-C++11 introduced a formal memory model. While `std::mutex` provides sequential consistency (the easiest to reason about), lock-free programming requires understanding atomic operations and memory ordering. Debugging memory ordering bugs is notoriously difficult because they manifest as intermittent data races or logical inconsistencies on specific CPU architectures (like ARM).
+C11 introduced a formal memory model. While `std::mutex` provides sequential consistency (the easiest to reason about), lock-free programming requires understanding atomic operations and memory ordering. Debugging memory ordering bugs is notoriously difficult because they manifest as intermittent data races or logical inconsistencies on specific CPU architectures (like ARM).
 
 ### Important Points
 - **Sequential Consistency (`std::memory_order_seq_cst`):** The default. All threads see all operations in the exact same order.
@@ -395,59 +399,71 @@ C++11 introduced a formal memory model. While `std::mutex` provides sequential c
 
 ### 16. Code Example: Relaxed Ordering Data Race (Logical)
 Using relaxed ordering can lead to threads seeing values out of order if not synchronized properly.
-```cpp
-#include <atomic>
-#include <thread>
-#include <iostream>
+```c
+#include <stdatomic.h>
+#include <pthread.h>
+#include <stdio.h>
 
-std::atomic<int> x(0);
-std::atomic<int> y(0);
+atomic_int x = 0;
+atomic_int y = 0;
 int r1 = 0, r2 = 0;
 
-void thread1() {
-    x.store(1, std::memory_order_relaxed);
-    r1 = y.load(std::memory_order_relaxed);
+void* thread1(void* arg) {
+    atomic_store_explicit(&x, 1, memory_order_relaxed);
+    r1 = atomic_load_explicit(&y, memory_order_relaxed);
+    return NULL;
 }
 
-void thread2() {
-    y.store(1, std::memory_order_relaxed);
-    r2 = x.load(std::memory_order_relaxed);
+void* thread2(void* arg) {
+    atomic_store_explicit(&y, 1, memory_order_relaxed);
+    r2 = atomic_load_explicit(&x, memory_order_relaxed);
+    return NULL;
 }
 
 int main() {
-    std::thread t1(thread1); std::thread t2(thread2);
-    t1.join(); t2.join();
+    pthread_t t1, t2;
+    pthread_create(&t1, NULL, thread1, NULL);
+    pthread_create(&t2, NULL, thread2, NULL);
+    pthread_join(t1, NULL); 
+    pthread_join(t2, NULL);
     // It is possible for both r1 == 0 AND r2 == 0 because 
     // the CPU/Compiler is free to reorder the load before the store!
-    std::cout << "r1: " << r1 << ", r2: " << r2 << std::endl;
+    printf("r1: %d, r2: %d\n", r1, r2);
+    return 0;
 }
 ```
 
 ### 17. Code Example: Safe Acquire-Release
 Correctly synchronizing a payload using acquire-release semantics.
-```cpp
-#include <atomic>
-#include <thread>
-#include <iostream>
+```c
+#include <stdatomic.h>
+#include <pthread.h>
+#include <stdio.h>
 
-std::atomic<bool> ready(false);
+atomic_bool ready = false;
 int payload = 0;
 
-void producer() {
+void* producer(void* arg) {
     payload = 42; // Normal memory write
     // Release ensures 'payload=42' happens before 'ready=true' becomes visible
-    ready.store(true, std::memory_order_release); 
+    atomic_store_explicit(&ready, true, memory_order_release); 
+    return NULL;
 }
 
-void consumer() {
+void* consumer(void* arg) {
     // Acquire ensures we don't read 'payload' until 'ready' is truly true
-    while (!ready.load(std::memory_order_acquire)) {} 
-    std::cout << "Payload: " << payload << std::endl; // Safely prints 42
+    while (!atomic_load_explicit(&ready, memory_order_acquire)) {} 
+    printf("Payload: %d\n", payload); // Safely prints 42
+    return NULL;
 }
 
 int main() {
-    std::thread t1(producer); std::thread t2(consumer);
-    t1.join(); t2.join();
+    pthread_t t1, t2;
+    pthread_create(&t1, NULL, producer, NULL);
+    pthread_create(&t2, NULL, consumer, NULL);
+    pthread_join(t1, NULL); 
+    pthread_join(t2, NULL);
+    return 0;
 }
 ```
 
@@ -568,7 +584,7 @@ int main() {
 <b>Answer:</b> It lists the symbols (functions, global variables) stored in the object file.
 </details>
 
-21. What happens if you compile a C++ program without the `-g` flag and try to debug it with GDB?
+21. What happens if you compile a C program without the `-g` flag and try to debug it with GDB?
 <details><summary>View Answer</summary>
 <b>Answer:</b> GDB will show assembly instructions and memory addresses, but won't map them back to variable names or source code lines.
 </details>
@@ -593,7 +609,7 @@ int main() {
 <b>Answer:</b> It prints an error message to standard error and continues execution, unlike ASAN which usually halts the program.
 </details>
 
-26. What does `std::memory_order_relaxed` guarantee in C++11 atomics?
+26. What does `std::memory_order_relaxed` guarantee in C11 atomics?
 <details><summary>View Answer</summary>
 <b>Answer:</b> It guarantees atomicity of the operation on that specific variable, but enforces no synchronization or ordering constraints on surrounding memory operations.
 </details>
@@ -603,7 +619,7 @@ int main() {
 <b>Answer:</b> To save disk space and to prevent leakage of sensitive memory data.
 </details>
 
-28. What is a "data race" in C++?
+28. What is a "data race" in C?
 <details><summary>View Answer</summary>
 <b>Answer:</b> When two or more threads concurrently access the same memory location, at least one access is a write, and the accesses are not synchronized.
 </details>
