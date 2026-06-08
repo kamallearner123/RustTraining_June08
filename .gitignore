@@ -1,0 +1,4 @@
+core.*
+perf.data
+*.o
+*.out
