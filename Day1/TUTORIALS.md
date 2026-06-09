@@ -122,5 +122,126 @@ Index 5 is zero.
 
 ---
 
+## 4. Helgrind: Detecting Threading Errors
+
+Helgrind is a Valgrind tool used for detecting synchronization errors in programs that use the POSIX pthreads threading primitives. It can detect data races, lock ordering violations (potential deadlocks), and misuses of the POSIX pthreads API.
+
+### The Data Race Example (`race.c`)
+```c
+#include <pthread.h>
+#include <stdio.h>
+
+int shared_counter = 0;
+
+void* increment(void* arg) {
+    for (int i = 0; i < 10000; ++i) {
+        // BUG: Data race! No mutex protecting this shared variable.
+        shared_counter++;
+    }
+    return NULL;
+}
+
+int main() {
+    pthread_t t1, t2;
+    pthread_create(&t1, NULL, increment, NULL);
+    pthread_create(&t2, NULL, increment, NULL);
+    
+    pthread_join(t1, NULL);
+    pthread_join(t2, NULL);
+    
+    printf("Counter: %d\n", shared_counter);
+    return 0;
+}
+```
+
+*Compiled with:* `gcc -g -pthread race.c -o race`
+
+### Running Helgrind
+```bash
+valgrind --tool=helgrind ./race
+```
+
+### Sample Helgrind Output
+```text
+==12345== Helgrind, a thread error detector
+==12345== ...
+==12345== Possible data race during read of size 4 at 0x10C014 by thread #3
+==12345== Locks held: none
+==12345==    at 0x1091A4: increment (race.c:9)
+==12345==    by 0x484C90B: mythread_wrapper (hg_intercepts.c:389)
+==12345== 
+==12345== This conflicts with a previous write of size 4 by thread #2
+==12345== Locks held: none
+==12345==    at 0x1091B0: increment (race.c:9)
+==12345==    by 0x484C90B: mythread_wrapper (hg_intercepts.c:389)
+==12345==  Address 0x10c014 is 0 bytes inside data symbol "shared_counter"
+```
+* **Explanation:** Helgrind successfully identifies that Thread #3 is trying to read `shared_counter` without any locks while Thread #2 is writing to it.
+
+---
+
+## 5. Callgrind: Profiling and Call Graphs
+
+Callgrind is a profiling tool that records the call history among functions in a program's run as a call-graph. By default, the collected data consists of the number of instructions executed, their relationship to source lines, and caller/callee relationships.
+
+### The Profiling Example (`heavy.c`)
+```c
+#include <stdio.h>
+
+void slow_function() {
+    volatile long sum = 0;
+    for(long i = 0; i < 10000000; i++) sum += i;
+}
+
+void fast_function() {
+    volatile long sum = 0;
+    for(long i = 0; i < 10; i++) sum += i;
+}
+
+int main() {
+    for(int i = 0; i < 5; i++) {
+        slow_function();
+        fast_function();
+    }
+    return 0;
+}
+```
+
+*Compiled with:* `gcc -g -O0 heavy.c -o heavy`
+
+### Running Callgrind
+```bash
+valgrind --tool=callgrind ./heavy
+```
+
+### Sample Callgrind Output
+Running the command won't print much to the terminal, but it will generate a file named `callgrind.out.<PID>`.
+```text
+==12345== Callgrind, a call-graph generating cache profiler
+==12345== ...
+==12345== Events    : Ir
+==12345== Collected : 350000150
+==12345== 
+==12345== I   refs:      350,000,150
+```
+
+To read this generated file, you use a tool called `callgrind_annotate`:
+```bash
+callgrind_annotate callgrind.out.12345
+```
+
+**Annotation Output:**
+```text
+--------------------------------------------------------------------------------
+Ir                  file:function
+--------------------------------------------------------------------------------
+350,000,000 (99.9%) heavy.c:slow_function
+        350 ( 0.0%) heavy.c:fast_function
+         50 ( 0.0%) heavy.c:main
+```
+* **Explanation:** `callgrind_annotate` aggregates the instruction reads (Ir). It shows that 99.9% of the CPU instructions were spent inside `slow_function`. For a GUI visualization, you can open the `.out` file with **KCachegrind**.
+
+---
+
 ### Conclusion
-Valgrind is invaluable for uncovering logic errors stemming from uninitialized memory (`--track-origins=yes`) and definitively proving where memory leaks originate. Use it as a secondary, deep-dive tool when AddressSanitizer doesn't provide enough context!
+Valgrind is invaluable for uncovering logic errors stemming from uninitialized memory (`--track-origins=yes`), definitively proving where memory leaks originate, diagnosing subtle multi-threading races (`helgrind`), and profiling deep performance bottlenecks (`callgrind`). Use it as a secondary, deep-dive tool when AddressSanitizer doesn't provide enough context!
