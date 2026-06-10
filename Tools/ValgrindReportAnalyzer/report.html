@@ -20,12 +20,12 @@
                 <h1 class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">
                     Valgrind Report Analyzer
                 </h1>
-                <p class="text-slate-400 mt-2 font-mono">Command: <span class="text-emerald-300">../../Day1/playground/invalid_memory.out</span> | PID: <span class="text-blue-300">100147</span></p>
+                <p class="text-slate-400 mt-2 font-mono">Command: <span class="text-emerald-300">./a.out</span> | PID: <span class="text-blue-300">112343</span></p>
             </div>
             <div class="mt-4 md:mt-0 text-right">
                 <span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd"></path></svg>
-                    
+                    ERROR SUMMARY: 6 errors from 6 contexts (suppressed: 0 from 0)
                 </span>
             </div>
         </header>
@@ -36,14 +36,14 @@
                 Heap Summary
             </h2>
             <ul class="space-y-2 font-mono text-sm text-slate-300">
-<li>No heap summary found.</li></ul></div>
+<li>in use at exit: 100 bytes in 1 blocks</li><li>total heap usage: 4 allocs, 4 frees, 310 bytes allocated</li></ul></div>
         <div class="glass rounded-xl p-6 shadow-xl border-l-4 border-l-red-500">
             <h2 class="text-xl font-bold text-slate-100 mb-4 flex items-center">
                 <svg class="w-5 h-5 mr-2 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                 Leak Summary
             </h2>
             <ul class="space-y-2 font-mono text-sm text-slate-300">
-<li>No leaks detected.</li></ul></div></div>
+<li>definitely lost: 100 bytes in 1 blocks</li><li>indirectly lost: 0 bytes in 0 blocks</li><li>possibly lost: 0 bytes in 0 blocks</li><li>still reachable: 0 bytes in 0 blocks</li><li>suppressed: 0 bytes in 0 blocks</li></ul></div></div>
         <div>
             <h2 class="text-2xl font-bold mb-6 text-slate-100 border-b border-slate-700 pb-2">Detected Errors</h2>
             <div class="space-y-6">
@@ -52,7 +52,7 @@
                     <div class="bg-red-500/20 px-6 py-4 border-b border-red-900/50 flex items-center justify-between">
                         <h3 class="text-lg font-semibold text-red-300 flex items-center gap-2">
                             <span class="bg-red-500/20 text-red-400 rounded-full w-6 h-6 flex items-center justify-center text-xs">1</span>
-                            Parent PID: 100146
+                            Parent PID: 20112
                         </h3>
                     </div>
                     <div class="p-6 bg-slate-900/50">
@@ -67,13 +67,13 @@
                     <div class="bg-red-500/20 px-6 py-4 border-b border-red-900/50 flex items-center justify-between">
                         <h3 class="text-lg font-semibold text-red-300 flex items-center gap-2">
                             <span class="bg-red-500/20 text-red-400 rounded-full w-6 h-6 flex items-center justify-center text-xs">2</span>
-                            Invalid write of size 8
+                            Conditional jump or move depends on uninitialised value(s)
                         </h3>
                     </div>
                     <div class="p-6 bg-slate-900/50">
                         <h4 class="text-xs uppercase tracking-wider text-slate-500 mb-3 font-semibold">Stack Trace</h4>
                         <div class="space-y-2 font-mono text-sm overflow-x-auto scrollbar-hide">
-            <div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">at 0x4001217: simulate_invalid_memory_access (main.c:16)</div><div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">by 0x40012F1: main (main.c:28)</div><div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">Address 0x4aa8488 is 8 bytes inside a block of size 10 alloc'd</div><div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">at 0x4850858: malloc (vg_replace_malloc.c:447)</div><div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">by 0x40011CD: simulate_invalid_memory_access (main.c:7)</div><div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">by 0x40012F1: main (main.c:28)</div>
+            <div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">at 0x40011CA: main (uninitialized.c:7)</div>
                         </div>
                     </div>
                 </div>
@@ -82,13 +82,13 @@
                     <div class="bg-red-500/20 px-6 py-4 border-b border-red-900/50 flex items-center justify-between">
                         <h3 class="text-lg font-semibold text-red-300 flex items-center gap-2">
                             <span class="bg-red-500/20 text-red-400 rounded-full w-6 h-6 flex items-center justify-center text-xs">3</span>
-                            Invalid write of size 8
+                            Invalid write of size 1
                         </h3>
                     </div>
                     <div class="p-6 bg-slate-900/50">
                         <h4 class="text-xs uppercase tracking-wider text-slate-500 mb-3 font-semibold">Stack Trace</h4>
                         <div class="space-y-2 font-mono text-sm overflow-x-auto scrollbar-hide">
-            <div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">at 0x400122F: simulate_invalid_memory_access (main.c:16)</div><div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">by 0x40012F1: main (main.c:28)</div><div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">Address 0x4aa8490 is 6 bytes after a block of size 10 alloc'd</div><div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">at 0x4850858: malloc (vg_replace_malloc.c:447)</div><div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">by 0x40011CD: simulate_invalid_memory_access (main.c:7)</div><div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">by 0x40012F1: main (main.c:28)</div>
+            <div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">at 0x40011FF: main (uninitialized.c:18)</div><div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">Address 0x4aa80fa is 0 bytes after a block of size 10 alloc'd</div><div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">at 0x4850858: malloc (vg_replace_malloc.c:447)</div><div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">by 0x40011F2: main (uninitialized.c:17)</div>
                         </div>
                     </div>
                 </div>
@@ -97,13 +97,13 @@
                     <div class="bg-red-500/20 px-6 py-4 border-b border-red-900/50 flex items-center justify-between">
                         <h3 class="text-lg font-semibold text-red-300 flex items-center gap-2">
                             <span class="bg-red-500/20 text-red-400 rounded-full w-6 h-6 flex items-center justify-center text-xs">4</span>
-                            Invalid write of size 8
+                            Conditional jump or move depends on uninitialised value(s)
                         </h3>
                     </div>
                     <div class="p-6 bg-slate-900/50">
                         <h4 class="text-xs uppercase tracking-wider text-slate-500 mb-3 font-semibold">Stack Trace</h4>
                         <div class="space-y-2 font-mono text-sm overflow-x-auto scrollbar-hide">
-            <div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">at 0x4001233: simulate_invalid_memory_access (main.c:16)</div><div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">by 0x40012F1: main (main.c:28)</div><div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">Address 0x4aa8498 is 14 bytes after a block of size 10 alloc'd</div><div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">at 0x4850858: malloc (vg_replace_malloc.c:447)</div><div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">by 0x40011CD: simulate_invalid_memory_access (main.c:7)</div><div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">by 0x40012F1: main (main.c:28)</div>
+            <div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">at 0x4001212: main (uninitialized.c:23)</div>
                         </div>
                     </div>
                 </div>
@@ -112,13 +112,13 @@
                     <div class="bg-red-500/20 px-6 py-4 border-b border-red-900/50 flex items-center justify-between">
                         <h3 class="text-lg font-semibold text-red-300 flex items-center gap-2">
                             <span class="bg-red-500/20 text-red-400 rounded-full w-6 h-6 flex items-center justify-center text-xs">5</span>
-                            Invalid write of size 8
+                            Invalid write of size 1
                         </h3>
                     </div>
                     <div class="p-6 bg-slate-900/50">
                         <h4 class="text-xs uppercase tracking-wider text-slate-500 mb-3 font-semibold">Stack Trace</h4>
                         <div class="space-y-2 font-mono text-sm overflow-x-auto scrollbar-hide">
-            <div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">at 0x400124B: simulate_invalid_memory_access (main.c:16)</div><div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">by 0x40012F1: main (main.c:28)</div><div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">Address 0x4aa84a0 is 22 bytes after a block of size 10 alloc'd</div><div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">at 0x4850858: malloc (vg_replace_malloc.c:447)</div><div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">by 0x40011CD: simulate_invalid_memory_access (main.c:7)</div><div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">by 0x40012F1: main (main.c:28)</div>
+            <div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">at 0x4001241: main (uninitialized.c:30)</div><div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">Address 0x4aa8140 is 0 bytes inside a block of size 100 free'd</div><div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">at 0x48538BF: free (vg_replace_malloc.c:990)</div><div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">by 0x400123C: main (uninitialized.c:29)</div>
                         </div>
                     </div>
                 </div>
@@ -127,13 +127,88 @@
                     <div class="bg-red-500/20 px-6 py-4 border-b border-red-900/50 flex items-center justify-between">
                         <h3 class="text-lg font-semibold text-red-300 flex items-center gap-2">
                             <span class="bg-red-500/20 text-red-400 rounded-full w-6 h-6 flex items-center justify-center text-xs">6</span>
-                            Invalid write of size 8
+                            Block was alloc'd at
                         </h3>
                     </div>
                     <div class="p-6 bg-slate-900/50">
                         <h4 class="text-xs uppercase tracking-wider text-slate-500 mb-3 font-semibold">Stack Trace</h4>
                         <div class="space-y-2 font-mono text-sm overflow-x-auto scrollbar-hide">
-            <div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">at 0x400124F: simulate_invalid_memory_access (main.c:16)</div><div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">by 0x40012F1: main (main.c:28)</div><div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">Address 0x4aa84a8 is 24 bytes after a block of size 16 in arena "client"</div>
+            <div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">at 0x4850858: malloc (vg_replace_malloc.c:447)</div><div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">by 0x400122C: main (uninitialized.c:28)</div>
+                        </div>
+                    </div>
+                </div>
+            
+                <div class="glass rounded-xl p-0 overflow-hidden shadow-lg border border-red-900/50">
+                    <div class="bg-red-500/20 px-6 py-4 border-b border-red-900/50 flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-red-300 flex items-center gap-2">
+                            <span class="bg-red-500/20 text-red-400 rounded-full w-6 h-6 flex items-center justify-center text-xs">7</span>
+                            Invalid free() / delete / delete[] / realloc()
+                        </h3>
+                    </div>
+                    <div class="p-6 bg-slate-900/50">
+                        <h4 class="text-xs uppercase tracking-wider text-slate-500 mb-3 font-semibold">Stack Trace</h4>
+                        <div class="space-y-2 font-mono text-sm overflow-x-auto scrollbar-hide">
+            <div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">at 0x48538BF: free (vg_replace_malloc.c:990)</div><div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">by 0x4001269: main (uninitialized.c:36)</div><div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">Address 0x4aa81f0 is 0 bytes inside a block of size 100 free'd</div><div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">at 0x48538BF: free (vg_replace_malloc.c:990)</div><div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">by 0x400125D: main (uninitialized.c:35)</div>
+                        </div>
+                    </div>
+                </div>
+            
+                <div class="glass rounded-xl p-0 overflow-hidden shadow-lg border border-red-900/50">
+                    <div class="bg-red-500/20 px-6 py-4 border-b border-red-900/50 flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-red-300 flex items-center gap-2">
+                            <span class="bg-red-500/20 text-red-400 rounded-full w-6 h-6 flex items-center justify-center text-xs">8</span>
+                            Block was alloc'd at
+                        </h3>
+                    </div>
+                    <div class="p-6 bg-slate-900/50">
+                        <h4 class="text-xs uppercase tracking-wider text-slate-500 mb-3 font-semibold">Stack Trace</h4>
+                        <div class="space-y-2 font-mono text-sm overflow-x-auto scrollbar-hide">
+            <div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">at 0x4850858: malloc (vg_replace_malloc.c:447)</div><div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">by 0x400124D: main (uninitialized.c:34)</div>
+                        </div>
+                    </div>
+                </div>
+            
+                <div class="glass rounded-xl p-0 overflow-hidden shadow-lg border border-red-900/50">
+                    <div class="bg-red-500/20 px-6 py-4 border-b border-red-900/50 flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-red-300 flex items-center gap-2">
+                            <span class="bg-red-500/20 text-red-400 rounded-full w-6 h-6 flex items-center justify-center text-xs">9</span>
+                            100 bytes in 1 blocks are definitely lost in loss record 1 of 1
+                        </h3>
+                    </div>
+                    <div class="p-6 bg-slate-900/50">
+                        <h4 class="text-xs uppercase tracking-wider text-slate-500 mb-3 font-semibold">Stack Trace</h4>
+                        <div class="space-y-2 font-mono text-sm overflow-x-auto scrollbar-hide">
+            <div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">at 0x4850858: malloc (vg_replace_malloc.c:447)</div><div class="text-slate-300 bg-slate-800/50 p-2 rounded border border-slate-700/50">by 0x40011E4: main (uninitialized.c:13)</div>
+                        </div>
+                    </div>
+                </div>
+            
+                <div class="glass rounded-xl p-0 overflow-hidden shadow-lg border border-red-900/50">
+                    <div class="bg-red-500/20 px-6 py-4 border-b border-red-900/50 flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-red-300 flex items-center gap-2">
+                            <span class="bg-red-500/20 text-red-400 rounded-full w-6 h-6 flex items-center justify-center text-xs">10</span>
+                            Use --track-origins=yes to see where uninitialised values come from
+                        </h3>
+                    </div>
+                    <div class="p-6 bg-slate-900/50">
+                        <h4 class="text-xs uppercase tracking-wider text-slate-500 mb-3 font-semibold">Stack Trace</h4>
+                        <div class="space-y-2 font-mono text-sm overflow-x-auto scrollbar-hide">
+            
+                        </div>
+                    </div>
+                </div>
+            
+                <div class="glass rounded-xl p-0 overflow-hidden shadow-lg border border-red-900/50">
+                    <div class="bg-red-500/20 px-6 py-4 border-b border-red-900/50 flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-red-300 flex items-center gap-2">
+                            <span class="bg-red-500/20 text-red-400 rounded-full w-6 h-6 flex items-center justify-center text-xs">11</span>
+                            For lists of detected and suppressed errors, rerun with: -s
+                        </h3>
+                    </div>
+                    <div class="p-6 bg-slate-900/50">
+                        <h4 class="text-xs uppercase tracking-wider text-slate-500 mb-3 font-semibold">Stack Trace</h4>
+                        <div class="space-y-2 font-mono text-sm overflow-x-auto scrollbar-hide">
+            
                         </div>
                     </div>
                 </div>

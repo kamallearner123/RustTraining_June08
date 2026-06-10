@@ -2,3 +2,5 @@ core.*
 perf.data
 *.o
 *.out
+target/
+.~lock.*#
