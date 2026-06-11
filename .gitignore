@@ -5,4 +5,7 @@ perf.data
 target/
 .~lock.*#
 main
+process_data
+data.csv
+
 
