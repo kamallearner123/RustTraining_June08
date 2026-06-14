@@ -1,0 +1,3 @@
+Hello from the host filesystem! Line 1.
+Line 2: WASI grants explicit access.
+Line 3: No access beyond what is granted.

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Matrix Multiply Benchmark — WASM vs JS</title>
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #0f0f1a; color: #e0e0f0; padding: 2rem; }
+    h1 { color: #a78bfa; }
+    .controls { margin: 1.5rem 0; }
+    label { color: #9ca3af; margin-right: 0.5rem; }
+    input { background: #1a1a2e; border: 1px solid #3d3d6a; border-radius: 6px;
+            color: #e0e0f0; padding: 0.4rem 0.6rem; width: 80px; }
+    button { background: #7c3aed; color: white; border: none; border-radius: 8px;
+             padding: 0.6rem 1.5rem; font-size: 1rem; cursor: pointer; margin: 0.5rem 0; }
+    button:hover { background: #6d28d9; }
+    .result-box { background: #1a1a2e; border-radius: 12px; padding: 1.5rem; margin-top: 1.5rem; }
+    .row { display: flex; justify-content: space-between; padding: 0.5rem 0;
+           border-bottom: 1px solid #2d2d4a; }
+    .label { color: #9ca3af; }
+    .val { font-weight: 700; }
+    .wasm-val { color: #34d399; }
+    .js-val { color: #f59e0b; }
+    .winner { margin-top: 1rem; font-size: 1.1rem; font-weight: 700; color: #a78bfa; }
+  </style>
+</head>
+<body>
+  <h1>⚡ Matrix Multiply: WASM vs JavaScript</h1>
+  <p style="color:#6b7280">Measures the time to multiply two N×N matrices. C++ compiled to WASM vs pure JS.</p>
+  <div class="controls">
+    <label>Matrix Size (N):</label>
+    <input type="number" id="size" value="256" min="64" max="512">
+    <br>
+    <button onclick="runBenchmark()">▶ Run Benchmark</button>
+  </div>
+  <div class="result-box" id="results" style="display:none">
+    <div class="row"><span class="label">Matrix Size</span><span class="val" id="r-size">—</span></div>
+    <div class="row"><span class="label">WASM Time</span><span class="val wasm-val" id="r-wasm">—</span></div>
+    <div class="row"><span class="label">JS Time</span><span class="val js-val" id="r-js">—</span></div>
+    <div class="winner" id="r-winner">—</div>
+  </div>
+  <script src="matrix.js"></script>
+  <script src="benchmark.js"></script>
+</body>
+</html>
