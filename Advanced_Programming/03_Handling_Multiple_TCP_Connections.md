@@ -1,57 +1,104 @@
-# Handling Multiple TCP Connections
+# Chapter 3: High-Performance Networking and Protocol Framing
 
-Building a scalable network server often requires handling thousands of simultaneous connections. In Rust, this is typically done using asynchronous I/O and runtimes like `tokio`.
+Building a robust TCP server requires far more than just reading bytes from a socket. TCP is a **stream-oriented** protocol, not a message-oriented one. If you send "Hello" and "World", the receiver might read "Hel", "loW", and "orld" in separate chunks. 
 
 ![Handling Multiple TCP Connections](/home/kamal/.gemini/antigravity/brain/501820e8-442d-4db7-86dc-3148d95583d4/tcp_connections_1783348069503.png)
 
-## Example: An Async TCP Echo Server
+## 3.1 The C10k Problem and I/O Multiplexing
+Traditional web servers (like older versions of Apache) spawned one OS thread per connection. At 10,000 connections, context switching overhead and memory consumption crippled the server.
 
-This example demonstrates how to accept multiple TCP connections concurrently and echo back any data received from the clients without blocking the main execution thread.
+Modern servers use **I/O Multiplexing** (epoll on Linux). A single thread can monitor thousands of sockets simultaneously and only wake up when a specific socket is ready for reading or writing. `tokio` abstracts this away behind `async/await`.
+
+## 3.2 Protocol Framing
+Because TCP streams bytes arbitrarily, you must define a "frame" so the server knows where a message begins and ends. Common framing strategies include:
+1. **Delimiter-based:** Read until you see a `\n` (good for text).
+2. **Length-prefixed:** Send 4 bytes indicating message size, then send the exact payload (essential for binary data).
+
+## 3.3 Production-Grade Example: A Real-Time Broadcast Chat Server
+This example demonstrates a complex network architecture: A real-time chat server where hundreds of clients can connect. When one client sends a message, it is instantly broadcasted to all other connected clients using Tokio's `broadcast` channel.
 
 ```rust
-use tokio::net::TcpListener;
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::net::{TcpListener, TcpStream};
+use tokio::sync::broadcast;
+use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
+use std::net::SocketAddr;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Bind the listener to the address and port.
     let listener = TcpListener::bind("127.0.0.1:8080").await?;
-    println!("Server running on 127.0.0.1:8080");
+    println!("Real-time Broadcast Chat Server running on 127.0.0.1:8080");
 
-    // Continuously accept new incoming connections.
+    // Create a broadcast channel. Capacity is 1000 messages.
+    // Senders can send messages; Receivers get a clone of every message.
+    let (tx, _rx) = broadcast::channel::<(String, SocketAddr)>(1000);
+
     loop {
-        // `accept()` waits for an incoming connection and returns a socket and the peer's address.
-        let (mut socket, addr) = listener.accept().await?;
-        println!("New connection from: {}", addr);
+        // Asynchronously wait for an inbound connection
+        let (stream, addr) = listener.accept().await?;
+        println!("New client connected: {}", addr);
 
-        // Spawn a new asynchronous task for each connection.
-        // This ensures that handling one connection doesn't block the server from accepting others.
+        // Clone the transmitter and create a new receiver for this specific client
+        let tx = tx.clone();
+        let rx = tx.subscribe();
+
+        // Spawn an independent task to handle this client's I/O
         tokio::spawn(async move {
-            let mut buffer = [0; 1024];
-
-            // Continuously read data from the socket.
-            loop {
-                // Read data into the buffer. This is an async, non-blocking operation.
-                let bytes_read = match socket.read(&mut buffer).await {
-                    Ok(0) => {
-                        // A read size of 0 indicates the connection was closed by the client.
-                        println!("Connection closed by: {}", addr);
-                        break;
-                    }
-                    Ok(n) => n,
-                    Err(e) => {
-                        eprintln!("Failed to read from socket: {}", e);
-                        break;
-                    }
-                };
-
-                // Echo the received data back to the client.
-                if let Err(e) = socket.write_all(&buffer[0..bytes_read]).await {
-                    eprintln!("Failed to write to socket: {}", e);
-                    break;
-                }
+            if let Err(e) = handle_client(stream, addr, tx, rx).await {
+                eprintln!("Error handling client {}: {:?}", addr, e);
             }
         });
     }
 }
+
+async fn handle_client(
+    mut stream: TcpStream, 
+    addr: SocketAddr, 
+    tx: broadcast::Sender<(String, SocketAddr)>,
+    mut rx: broadcast::Receiver<(String, SocketAddr)>
+) -> Result<(), Box<dyn std::error::Error>> {
+    // We split the TCP stream into a ReadHalf and a WriteHalf
+    // This allows us to read and write concurrently without locking the socket.
+    let (reader, mut writer) = stream.split();
+    
+    // BufReader buffers inbound bytes and provides `read_line` for delimiter-based framing.
+    let mut reader = BufReader::new(reader);
+    let mut line = String::new();
+
+    loop {
+        // tokio::select! is a powerful macro that waits on multiple async branches.
+        // It executes whichever branch finishes first and cancels the other branches.
+        tokio::select! {
+            // BRANCH 1: Waiting for input FROM the TCP client over the network
+            result = reader.read_line(&mut line) => {
+                if result? == 0 {
+                    println!("Client {} disconnected.", addr);
+                    break;
+                }
+                
+                // Broadcast the message to the central channel
+                tx.send((line.clone(), addr))?;
+                line.clear();
+            }
+            
+            // BRANCH 2: Waiting for messages FROM the broadcast channel (sent by other clients)
+            result = rx.recv() => {
+                let (msg, sender_addr) = result?;
+                
+                // Only forward the message if it came from a DIFFERENT client
+                if addr != sender_addr {
+                    // Prepend the sender's address to the message
+                    let formatted_msg = format!("[{}]: {}", sender_addr, msg);
+                    writer.write_all(formatted_msg.as_bytes()).await?;
+                }
+            }
+        }
+    }
+    
+    Ok(())
+}
 ```
+
+### Key Takeaways from the Advanced Example
+- **Broadcast Channels**: `tokio::sync::broadcast` implements the Publish/Subscribe pattern. One task sends a message, and *every* active receiver task gets a clone of it. Perfect for chat servers or live event streaming.
+- **`tokio::select!`**: This is the heart of complex async control flow. We must wait for *both* inbound TCP traffic and inbound channel messages simultaneously. `select!` polls both futures concurrently on the same task.
+- **Stream Splitting**: TCP sockets are bi-directional. By splitting the stream into a reader and writer, we satisfy Rust's borrow checker, allowing simultaneous read and write operations inside the `select!` macro.
